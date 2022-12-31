@@ -3,6 +3,9 @@ from twitchio.ext import commands
 from clientshit import access_token
 
 class Bot(commands.Bot):
+    chatter_dict = {}
+    
+
 
     def __init__(self):
         # Initialise our Bot with our access token, prefix and a list of channels to join on boot...
@@ -19,6 +22,7 @@ class Bot(commands.Bot):
         print(f'Logged in as | {self.nick}')
         print(f'User id is | {self.user_id}')
 
+
     async def event_message(self, message):
         # Messages with echo set to True are messages sent by the bot...
         # For now we just want to ignore them...
@@ -27,6 +31,21 @@ class Bot(commands.Bot):
 
         # Print the contents of our message to console...
         print(message.content.encode("utf-8"))
+        print(message.author.name)
+       
+
+        #check if user is subscriber or not
+        #if they use a channel emote "channel emote without sub" they are docked point
+        print(message.author.is_subscriber )
+
+       
+
+        #this will add chatters to the dict
+        if message.author.name not in self.chatter_dict.keys():
+            self.chatter_dict[message.author.name]=0 
+        else:
+            self.chatter_dict[message.author.name] += 1 
+        print(self.chatter_dict)
 
         # Since we have commands and are overriding the default `event_message`
         # We must let the bot know we want to handle and invoke our commands...

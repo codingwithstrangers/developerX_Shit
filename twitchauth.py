@@ -4,7 +4,7 @@ from clientshit import client_id , client_secret
 
 query_string = urlencode({'client_id': client_id, 'client_secret': client_secret, "grant_type": "client_credentials"})
 
-#r format is good for url stringsand, a \ is a special character in a string
+#r format is good for udeveloperxrl stringsand, a \ is a special character in a string
 twitch_url_prefix = r'https://id.twitch.tv/oauth2/token?'
 
 finished_endpoint = twitch_url_prefix + query_string
