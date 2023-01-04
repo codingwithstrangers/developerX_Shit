@@ -32,3 +32,30 @@ To https://github.com/Wakandas-1st-Heero/developerX_Shit.git
  * [new branch]      master -> master
 branch 'master' set up to track 'origin/master'.
 PS F:\Coding with Strangers\Twitchbot\perfectstrangerbot>
+
+
+
+try 
+Other stuff
+
+
+import requests
+
+client_id = 'your_client_id'
+client_secret = 'your_client_secret'
+
+auth_response = requests.post('https://id.twitch.tv/oauth2/token', {
+  'client_id': client_id,
+  'client_secret': client_secret,
+  'grant_type': 'client_credentials'
+})
+
+auth_response.raise_for_status()
+auth_response_json = auth_response.json()
+
+access_token = auth_response_json['access_token']
+
+
+headers = {
+  'Authorization': f'Bearer {access_token}'
+}
