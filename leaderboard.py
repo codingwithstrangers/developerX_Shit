@@ -103,9 +103,15 @@ class Bot(commands.Bot):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.item(), key=lambda x: x[1], reverse=True)
         )
         top_three = dict(list(sorted_points_chatter.items())[:3])
-
+        
+        def ordinal(n):
+	        return f"{n}{dict({1: 'st', 2: 'nd', 3: 'rd'}).get(4 if 10 <= n % 100 < 20 else n % 10, 'th')}"
+        
         Ranking_message = ""
-        for y, (message.author.name,)
+        for n, (name, point) in enumerate(top_three.items(), 1):
+            Ranking_message += f"{ordinal(n)} Place: {name} With {point} Points"
+
+        print(Ranking_message)
 
         '''This will send message to specified channel every 10 seconds for 5 times, 
            remove iteration as it will stop after 5 times
