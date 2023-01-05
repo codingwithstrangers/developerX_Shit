@@ -105,7 +105,10 @@ class Bot(commands.Bot):
         top_three = dict(list(sorted_points_chatter.items())[:3])
 
         Ranking_message = ""
-        for y, (message.author.name,)
+        for n, (name, point) in enumerate(top_three.items()):
+            Ranking_message += f"{n}. {name} - {point}"
+           
+        print(Ranking_message)
 
         '''This will send message to specified channel every 10 seconds for 5 times, 
            remove iteration as it will stop after 5 times
