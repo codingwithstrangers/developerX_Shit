@@ -1,4 +1,5 @@
-#pull everything 
+from operator import length_hint
+import random
 from twitchio.ext import commands, routines
 from clientshit import access_token
 
@@ -71,7 +72,7 @@ class Bot(commands.Bot):
         if message.author.is_subscriber:
             print("🌟")
         else:
-            print("🌕")
+            print("🌘")
         
 
         # Since we have commands and are overriding the default `event_message`
@@ -98,22 +99,48 @@ class Bot(commands.Bot):
     iterations: The amount of iterations to run this routine before stopping. If set to None or 0, the routine will run indefinitely.
     wait_first: Whether to wait the specified time before running the first iteration. This has no effect when the time argument is used. Defaults to False.'''
 
-    @routines.routine(seconds=10.0, iterations=5)
+    @routines.routine(seconds=30.0, iterations=5)
     async def send_leaderboard(self):
-        sorted_points_chatter = dict(sorted(self.points_by_chatter.item(), key=lambda x: x[1], reverse=True)
+        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
         )
         top_three = dict(list(sorted_points_chatter.items())[:3])
+        # all_chatters = sorted_points_chatter
+        # # Pick a random user and point from the points_by_chatter dictionary
+        # random_user, random_points = random.choice(list(self.points_by_chatter.items()))
 
         Ranking_message = ""
-        for y, (message.author.name,)
+        for y, (name,points) in enumerate(top_three.items()):
+            if y == 0:
+                Ranking_message+= f"1st Place: {name} With {points} points is Leading The way coding32Zemi\n"
+            elif y == 1:
+                Ranking_message+= f"2nd Place: {name} With {points} points is Not Far Behind coding32Valor\n"
+            elif y == 2:
+                Ranking_message+= f"3rd Place: {name} With {points} points Will Not Be Ignored coding32Key\n"
 
         '''This will send message to specified channel every 10 seconds for 5 times, 
            remove iteration as it will stop after 5 times
            you can send the updated leaderboard here or print it out to console periodically
         ''' 
-        
-        await self.get_channel("codingwithstrangers").send("Test")
+        random_chatter = await self.random_chatter(sorted_points_chatter)        
+        print(random_chatter)
 
+        await self.get_channel("codingwithstrangers").send(Ranking_message)
+
+    async def random_chatter (self, all_chatters):
+        #we need all members after the 3rd member
+        #We need error checking to confirm our dict has at least 4 members
+        #If we have less than 4 members we will return a custom string to show this
+        if len(all_chatters)> 3:
+            return""       
+        else:
+            return "Come on Guys I know you ain't Stalking and not Talking"
+
+           
+
+            
+      
+
+       
 bot = Bot()
 bot.run()
 # bot.run() is blocking and will stop execution of any below code here until stopped or closed.

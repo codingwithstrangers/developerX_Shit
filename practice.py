@@ -1,4 +1,6 @@
 #pull everything 
+import time
+import os
 from twitchio.ext import commands
 from clientshit import access_token
 
@@ -22,6 +24,17 @@ class Bot(commands.Bot):
         print(f'Logged in as | {self.nick}')
         print(f'User id is | {self.user_id}')
 
+    async def event_message(self, message):
+    # Messages with echo set to True are messages sent by the bot...
+    # For now we just want to ignore them...
+        if message.echo:
+            return
+
+        # check if the message starts with the command prefix
+        if message.content.startswith('?perfectstranger'):
+            # run the send_leaderboard routine
+            await self.send_leaderboard()
+            return
 
     async def event_message(self, message):
         # Messages with echo set to True are messages sent by the bot...
@@ -56,7 +69,7 @@ class Bot(commands.Bot):
              
         
 
-         #check if user is subscriber or not
+        #check if user is subscriber or not
         #if they use a channel emote "channel emote and are subbed" they are getting .5 point
         subbed_chatters = ["coding32Thinkmybrother", "coding32Trunks", "coding32Whatmybrother", "coding32Zemi", "coding32Goten"]
         for x in message.content.split():
@@ -67,13 +80,34 @@ class Bot(commands.Bot):
         if message.author.is_subscriber:
             print("🌟")
         else:
-            print("🌕")
+            print("🌘 ")
 
         #this will sort and keep to a top 10
         sorted_points_by_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
         top_ten = dict(list(sorted_points_by_chatter.items())[:10])
         print(top_ten)
- 
+
+
+        #write this to a text file
+        ## specify the directory
+        directory = "F:\Coding with Strangers\Twitchbot\perfectstrangerbot"
+
+        # create the directory if it doesn't exist
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # open a file in append mode
+        with open(os.path.join(directory, 'points.txt'), 'a') as f:
+            # get current time
+            timestamp = time.time()
+
+            # convert timestamp to readable format
+            readable_time = time.ctime(timestamp)
+
+            # write the timestamp and points to the file
+            f.write(readable_time + '\n')
+            for name, points in top_ten.items():
+                f.write(name + ': ' + str(points) + '\n')
 
         # Since we have commands and are overriding the default `event_message`
         # We must let the bot know we want to handle and invoke our commands...
