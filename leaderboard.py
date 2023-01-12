@@ -99,7 +99,7 @@ class Bot(commands.Bot):
     iterations: The amount of iterations to run this routine before stopping. If set to None or 0, the routine will run indefinitely.
     wait_first: Whether to wait the specified time before running the first iteration. This has no effect when the time argument is used. Defaults to False.'''
 
-    @routines.routine(seconds=30.0, iterations=5)
+    @routines.routine(hours=1.0, iterations=5)
     async def send_leaderboard(self):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
         )
