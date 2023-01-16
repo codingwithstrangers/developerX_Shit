@@ -94,11 +94,28 @@ class Bot(commands.Bot):
             # Send a hello back!
             # Sending a reply back to the channel is easy... Below is an example.
             
-            
+
             Ranking_message = await self.leaderboard_snap(sorted_points_chatter)
             await ctx.send(f'{Ranking_message}')
 
+    @commands.command()
+    
+    async def finalleaderboard(self, ctx: commands.Context):
+        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
+        )
+        top_three = dict(list(sorted_points_chatter.items())[:3])
+        if ctx.author.is_broadcaster:
+                    
+            #Write top three users to text files
+            for t, user in enumerate(top_three.items()):
+                with open(f"user{t+1}.txt", "w") as f:
+                    f.write(user[0])
+
         
+        Ranking_message = await self.final_Leaderboard(sorted_points_chatter)
+        await ctx.send(f'{Ranking_message}')
+
+
 
     async def leaderboard_snap (self, sorted_chatters):
         
@@ -147,12 +164,13 @@ class Bot(commands.Bot):
         #we need all members after the 3rd member
         #We need error checking to confirm our dict has at least 4 members
         #If we have less than 4 members we will return a custom string to show this
+
         if len(all_chatters)> 3:
             remaining_members = list(all_chatters.keys())[3:]
             
             return f"{random.choice(remaining_members)}, Is in the back but we see you"       
         else:
-            return "coding32Thinkmybrother Come on Stranger I know you ain't Stalking and not Talking \n"
+            return "coding32Thinkmybrother Come on Stranger I know you ain't Stalking and not Talking? JKJK We love you regardless \n"
        
 bot = Bot()
 bot.run()
