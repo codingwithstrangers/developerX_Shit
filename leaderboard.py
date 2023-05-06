@@ -61,7 +61,7 @@ class Bot(commands.Bot):
              
         
 
-         #check if user is subscriber or not
+        #check if user is subscriber or not
         #if they use a channel emote "channel emote and are subbed" they are getting .5 point
         subbed_chatters = ["coding32Thinkmybrother", "coding32Trunks", "coding32Whatmybrother", "coding32Zemi", "coding32Goten"]
         for x in message.content.split():
@@ -99,7 +99,7 @@ class Bot(commands.Bot):
     iterations: The amount of iterations to run this routine before stopping. If set to None or 0, the routine will run indefinitely.
     wait_first: Whether to wait the specified time before running the first iteration. This has no effect when the time argument is used. Defaults to False.'''
 
-    @routines.routine(hours=1.0, iterations=5)
+    @routines.routine(seconds=5.0, iterations=5)
     async def send_leaderboard(self):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
         )
