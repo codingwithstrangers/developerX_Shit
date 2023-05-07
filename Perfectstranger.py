@@ -65,7 +65,7 @@ class Bot(commands.Bot):
         #check if user is subscriber or not
         #if they use a channel emote "channel emote and are subbed" they are getting .5 point
         subbed_chatters = ["coding32Thinkmybrother", "coding32Trunks", "coding32Whatmybrother", "coding32Zemi", "coding32Goten", "coding32Heart", "coding32Outofsewer"
-                           , "coding32sewer"]
+                           , "coding32sewer", "coding32Suscoding", "coding32Donny", "coding32What"]
         for x in message.content.split():
             if x in subbed_chatters and message.author.is_subscriber == 1:
                 self.points_by_chatter[message.author.name] += .5
@@ -142,7 +142,7 @@ class Bot(commands.Bot):
         
     
 # ******************
-    @routines.routine(seconds=5.0, iterations=5)
+    @routines.routine(hours=1.0, iterations=5)
     async def send_leaderboard(self):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
         )
@@ -178,7 +178,7 @@ class Bot(commands.Bot):
             
             return f"{random.choice(remaining_members)}, Is in the back but we see you"       
         else:
-            return "coding32Thinkmybrother Come on Stranger I know you ain't Stalking and not Talking \n"
+            return "coding32Suscoding Come on Stranger I know you ain't Stalking and not Talking \n"
             
 bot = Bot()
 bot.run()
