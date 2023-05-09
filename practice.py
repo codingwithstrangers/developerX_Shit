@@ -1,4 +1,4 @@
-
+import json
 from operator import length_hint
 import random
 from twitchio.ext import commands, routines
@@ -39,13 +39,13 @@ class Bot(commands.Bot):
         print(message.author.name)
       
         #this will add the user to dic and count 
-        if message.author.name not in self.points_by_chatter.keys():
-            self.points_by_chatter[message.author.name]=0
-            '''for optimization the code will only add 1 pt regarless if emote is used with the .5 mult
-            need to see if we can add more logic to make it check if emote is being used''' 
-        # elif:
-        #     #check to see if the user is a subscriber if so and they use subbed_chatter word they get 1.5pt
-        #     subbed_chatters and message.author.is_subscriber == 0
+        # list of users to exclude
+        exclude_users = ['Nightbot', 'user1', 'user2']
+
+        if message.author.name not in exclude_users:
+            if message.author.name not in self.points_by_chatter.keys():
+                self.points_by_chatter[message.author.name]=0
+                # rest of the code
         else:
             self.points_by_chatter[message.author.name] += 1
         
@@ -53,7 +53,8 @@ class Bot(commands.Bot):
         # wight one bad word they wont get any point.
 
         for i in message.content.split():
-            bad_words = ["strainbreh", "fun", "easy", "blender with strangers", "art with strangers", "mod", "my wife is black", "racing game" ]
+            bad_words = ["strainbreh", "fun", "easy", "blender with strangers", "art with strangers", "mod", "my wife is black", "racing game"
+                         ,"blm" ]
             if i.lower() in bad_words:   
                 if len(message.content) == 1:
                     self.points_by_chatter[message.author.name] -= 0.5  
@@ -65,7 +66,7 @@ class Bot(commands.Bot):
         #check if user is subscriber or not
         #if they use a channel emote "channel emote and are subbed" they are getting .5 point
         subbed_chatters = ["coding32Thinkmybrother", "coding32Trunks", "coding32Whatmybrother", "coding32Zemi", "coding32Goten", "coding32Heart", "coding32Outofsewer"
-                           , "coding32sewer"]
+                           , "coding32sewer", "coding32Suscoding", "coding32Donny", "coding32What"]
         for x in message.content.split():
             if x in subbed_chatters and message.author.is_subscriber == 1:
                 self.points_by_chatter[message.author.name] += .5
@@ -100,119 +101,87 @@ class Bot(commands.Bot):
             Ranking_message = await self.leaderboard_snap(sorted_points_chatter)
             await ctx.send(f'{Ranking_message}')
 
+
+
     @commands.command()
-    
+    async def addpoints(self, ctx: commands.Context, user, points: int):
+        if points > 0:
+            if user.id in self.points_by_chatter:
+                self.points_by_chatter[user.id] += points
+            else:
+                self.points_by_chatter[user.id] = points
+
+    def __init__(self):
+        
+        self.points_by_chatter = {}  # dictionary to store points by user
+        self.ranks_by_chatter = {}  # dictionary to store ranks by user
+        self.load_data()  # load data from file on initialization
+
+    def load_data(self):
+        try:
+            with open("leaderboard_data.json", "r") as f:
+                data = json.load(f)
+                self.points_by_chatter = data["points"]
+                self.ranks_by_chatter = data["ranks"]
+        except FileNotFoundError:
+            print("No leaderboard data found, starting from scratch.")
+
+    def save_data(self):
+        data = {"points": self.points_by_chatter, "ranks": self.ranks_by_chatter}
+        with open("leaderboard_data.json", "w") as f:
+            json.dump(data, f)
+
     async def finalleaderboard(self, ctx: commands.Context):
-        def __init__ (self):
-            # Initialize a dictionary to store points by chatter, and a dictionary to store ranks by chatter
-            self.points_by_chatter = {}
-            self.ranks_by_chatter = {}
-            # Initialize a dictionary to store rankings for each rank (1st, 2nd, 3rd)
-            self.rankings = {1:{}, 2:{}, 3:{}}
-        
-        async def update_score (self, chatter, points):
-            # If the chatter is not in the points dictionary, add them with a score of 0 and an empty rank dictionary
-            if chatter not in self.points_by_chatter:
-                self.points_by_chatter[chatter] = 0
-                self.ranks_by_chatter[chatter] = {}
-            # Add the points to the chatter's score
-            self.points_by_chatter[chatter] += points
+        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
 
-            # Get the rank of the chatter
-            rank = self.get_rank(chatter)
-            # If the chatter has a rank, update their rank dictionary with the number of times they achieved the rank and their total points
-            if rank is not None:
-                if rank in self.ranks_by_chatter[chatter]:
-                    self.ranks_by_chatter[chatter][rank][0] += 1 
-                    self.ranks_by_chatter[chatter][rank][1] += points
-                else:
-                    self.ranks_by_chatter[chatter][rank] = [points, 1]
-            #come back and see this shit
-        
-        def get_rank(self, chatter):
-            #sort the chatters in order by decending order
-            sorted_chatters = sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
-            rank = None
+        # Write leaderboard data to file
+        with open("leaderboard_data.json", "w") as f:
+            json.dump(sorted_points_chatter, f)
 
-            # Loop through the sorted chatters, find the rank of the given chatter, and return it
-            for i, c in enumerate(sorted_chatters):
-                if c[0] == chatter:
-                    rank = i + 1
-                    break
-                return rank 
-            
-        async def final_leaderboard(self, ctx: commands.Context):
-            # Sort the points by chatter in descending order
-            sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
-            # Get the top three chatters
-            top_three = dict(list(sorted_points_chatter.items())[:3])
-            # If the caller is a broadcaster, write the top three chatters to text files
-            if ctx.author.is_broadcaster:
-                for t, user in enumerate(top_three.items()):
-                    with open(f"user{t+1}.txt", "w") as f:
-                        f.write(user[0])
-            # Get the final leaderboard message and send it
-            ranking_message = await self.final_leaderboard_message(sorted_points_chatter)
-            await ctx.send(f'{ranking_message}')
-                 
-        async def final_Leaderboard_message (self, sorted_points_chatter):
-              # Initialize a list of messages to build the final message
-            messages = []
-            # Loop through the rankings
-            for rank, chatters in self.rankings.items():
-                messages.append(f"\n{rank}st: ")
-                #Loop through chatters in ranking and add their info for the message
-                for chatter, data in chatters.items():
-                    frequency = data[0]
-                    points = data[1]
-                    messages.append(f"{chatter} ({frequency} x {rank} {points} points), ")
-            # Join the messages together and return the final message
-            return ''.join(messages)
-        
-
-        # sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
-        # )
-        # top_three = dict(list(sorted_points_chatter.items())[:3])
-        # if ctx.author.is_broadcaster:
-                    
-        #     #Write top three users to text files
-        #     for t, user in enumerate(top_three.items()):
-        #         with open(f"user{t+1}.txt", "w") as f:
-        #             f.write(user[0])
-
-        
-        # Ranking_message = await self.final_Leaderboard(sorted_points_chatter)
-        # await ctx.send(f'{Ranking_message}')
-
-
-
-    async def leaderboard_snap (self, sorted_chatters):
-        
-        Ranking_message = ""
-        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
-        )
         top_three = dict(list(sorted_points_chatter.items())[:3])
-        for y, (name,points) in enumerate(top_three.items()):
-            if y == 0:
-                Ranking_message+= f"***1st Place: {name} With {points} points is Leading The way coding32Zemi *** \n"
-            elif y == 1:
-                Ranking_message+= f"2nd Place: {name} With {points} points is Not Far Behind coding32Valor *** \n"
-            elif y == 2:
-                Ranking_message+= f"3rd Place: {name} With {points} points Will Not Be Ignored coding32Key *** \n"
 
-        '''This will send message to specified channel every 10 seconds for 5 times, 
-           remove iteration as it will stop after 5 times
-           you can send the updated leaderboard here or print it out to console periodically
-        ''' 
-        Ranking_message += await self.random_chatter(sorted_points_chatter)
-        return Ranking_message    
+        if ctx.author.is_broadcaster:
+            # Write top three users to text files
+            for t, user in enumerate(top_three.items()):
+                with open(f"user{t+1}.txt", "w") as f:
+                    f.write(user[0])
+
+        Ranking_message = await self.final_Leaderboard(sorted_points_chatter)
+        await ctx.send(f'{Ranking_message}')
+
+    async def leaderboard_snap(self, sorted_chatters):
+        Ranking_message = ""
+        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
         
-    
-# ******************
+        # Write leaderboard data to file
+        with open("leaderboard_data.json", "w") as f:
+            json.dump(sorted_points_chatter, f)
+            
+        top_three = dict(list(sorted_points_chatter.items())[:3])
+        for y, (name, points) in enumerate(top_three.items()):
+            if y == 0:
+                Ranking_message += f"***1st Place: {name} with {points} points is leading the way!***\n"
+            elif y == 1:
+                Ranking_message += f"2nd Place: {name} with {points} points is not far behind.\n"
+            elif y == 2:
+                Ranking_message += f"3rd Place: {name} with {points} points will not be ignored.\n"
+
+        '''This will send message to specified channel every 10 seconds for 5 times,
+        remove iteration as it will stop after 5 times
+        you can send the updated leaderboard here or print it out to console periodically
+        '''
+        Ranking_message += await self.random_chatter(sorted_points_chatter)
+        return Ranking_message
+
+
     @routines.routine(hours=1.0, iterations=5)
     async def send_leaderboard(self):
-        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
-        )
+        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
+
+        # Write leaderboard data to file
+        with open("leaderboard_data.json", "w") as f:
+            json.dump(sorted_points_chatter, f)
+        
         top_three = dict(list(sorted_points_chatter.items())[:3])
         # all_chatters = sorted_points_chatter
         # # Pick a random user and point from the points_by_chatter dictionary
@@ -245,7 +214,7 @@ class Bot(commands.Bot):
             
             return f"{random.choice(remaining_members)}, Is in the back but we see you"       
         else:
-            return "coding32Thinkmybrother Come on Stranger I know you ain't Stalking and not Talking \n"
+            return "coding32Suscoding Come on Stranger I know you ain't Stalking and not Talking \n"
             
 bot = Bot()
 bot.run()

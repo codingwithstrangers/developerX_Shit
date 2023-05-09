@@ -39,21 +39,22 @@ class Bot(commands.Bot):
         print(message.author.name)
       
         #this will add the user to dic and count 
-        if message.author.name not in self.points_by_chatter.keys():
-            self.points_by_chatter[message.author.name]=0
-            '''for optimization the code will only add 1 pt regarless if emote is used with the .5 mult
-            need to see if we can add more logic to make it check if emote is being used''' 
-        # elif:
-        #     #check to see if the user is a subscriber if so and they use subbed_chatter word they get 1.5pt
-        #     subbed_chatters and message.author.is_subscriber == 0
-        else:
-            self.points_by_chatter[message.author.name] += 1
+        # list of users to exclude
+        exclude_users = ['nightbot']
+
+        if message.author.name not in exclude_users:
+            if message.author.name not in self.points_by_chatter.keys():
+                self.points_by_chatter[message.author.name]=0
+                # rest of the code
+            else:
+                self.points_by_chatter[message.author.name] += 1
         
         #minus point from user for infractions
         # wight one bad word they wont get any point.
 
         for i in message.content.split():
-            bad_words = ["strainbreh", "fun", "easy", "blender with strangers", "art with strangers", "mod", "my wife is black", "racing game" ]
+            bad_words = ["strainbreh", "fun", "easy", "blender with strangers", "art with strangers", "mod", "my wife is black", "racing game"
+                         ,"blm" ]
             if i.lower() in bad_words:   
                 if len(message.content) == 1:
                     self.points_by_chatter[message.author.name] -= 0.5  
