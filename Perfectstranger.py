@@ -102,22 +102,29 @@ class Bot(commands.Bot):
             await ctx.send(f'{Ranking_message}')
 
     @commands.command()
-    
+   
     async def finalleaderboard(self, ctx: commands.Context):
-        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
-        )
+        sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
         top_three = dict(list(sorted_points_chatter.items())[:3])
         if ctx.author.is_broadcaster:
                     
-            #Write top three users to text files
+            # Write top three users to text files
             for t, user in enumerate(top_three.items()):
+                name, score = user
+                rank = [f"{i}th" for i in range(1, len(top_three)+1)][t]
                 with open(f"user{t+1}.txt", "w") as f:
-                    f.write(user[0])
-
+                    f.write(f"{name}\nTotal pt: {score}\nRank: {rank}")
+            
+            #create another  textdoc for the perfect stranger to use
+            top_user = list(top_three)[0]
+            with open("perfectstranger.txt", "w") as f:
+                f.write(top_user)
         
         Ranking_message = await self.final_Leaderboard(sorted_points_chatter)
         await ctx.send(f'{Ranking_message}')
 
+
+        self.save_data() # save the data to the file after updating top_three
 
 
     async def leaderboard_snap (self, sorted_chatters):

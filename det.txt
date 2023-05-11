@@ -1,0 +1,102 @@
+improvements 
+***********
+What do you want?
+- I want to revamp the end credit scene
+
+How do you want to do this?
+-Adding the rank of the user
+-Adding the total score of the user
+-and keeping track of every user that is in top_three
+
+tools
+-csv 
+-python
+
+Sand of adding rank to user
+-step one = get the code to make the excel and do all formals 
+we dont want to do anything but pull from the excel/csv
+
+
+
+
+
+**************************
+Hiatus example
+
+# this would be your data after you read in the full CSV file
+# this example has columns [isodate, rank, user]
+# thus 3 lines of data per day, ranks 1 to 3, username per rank
+# here just two days and two ranks for simplification
+all_data = [['2023-05-09', 1, 'JustASuspect'], ['2023-05-09', 2, 'GrimyBadger'], 
+            ['2023-05-08', 1, 'foo'], ['2023-05-08', 2, 'JustASuspect']]
+ 
+# in the future you can read in your whole CSV file as
+import pandas as pd
+all_data = pd.read_csv(“daily_top_three_chatting_users.txt”)
+# pandas has huge number of parameters, but you prolly need none for a simple case
+# https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html
+ 
+# now, let's use the data
+# getting a list of all values in column 2, that is usernames
+list(map(lambda x: x[2], all_data))
+['JustASuspect', 'GrimyBadger', 'foo', 'JustASuspect']
+ 
+# narrowing down to data for a specific rank, here pick subset of rows, only rank 1 users for every day
+list(filter(lambda x: x[1] == 1, all_data))
+[['2023-05-09', 1, 'JustASuspect'], ['2023-05-08', 1, 'foo']]
+#           ^                                  ^
+# ie subset of rows, one per day
+ 
+# Counter is great way to count things in pure python, from standard library:
+# https://docs.python.org/3/library/collections.html#collections.Counter
+ 
+# thus you can count things like this:
+Counter(['x', 'y', 'x'])   # by feeding an array
+Counter({'x': 2, 'y': 1})  # get counts back like a dict
+ 
+# lets count 1 ranks
+c = Counter(map(lambda x: x[2], filter(lambda x: x[1] == 1, all_data)))
+ 
+# now we can use them:
+c.most_common(2)
+[('JustASuspect', 1), ('foo', 1)]
+# which reads as "JustASuspect" and "foo" have both been on rank on one day
+# ie. they are your top-2 of rank 1 users over all streams
+ 
+# remember to count also ranks 2 and 3 if you want to use them
+# godspeed!
+ 
+
+ extra code
+ # if ctx.author.is_broadcaster:
+        # #write top 3 users to text files
+        #     for t, user in enumerate(top_three.items()):
+        #         name, score = user
+        #         rank = f"{t+1}"
+        #         if t==0:
+        #             rank += "st"
+        #         elif t==1:
+        #             rank += "nd"
+        #         elif t==0:
+        #             rank += "rd"
+        #         else:
+        #             rank += " "
+
+            # formatted_string = [f'{i+1}{["st", "nd", "rd"][i]}' for i in range(3)]
+
+
+            #create CSV that updates ranks  and points
+            
+
+
+    #         # Write top three users to text files
+    #         for t, user in enumerate(top_three.items()):
+    #             name, score = user
+    #             rank = [f"{i}th" for i in range(1, len(top_three)+1)][t]
+    #             with open(f"user{t+1}.txt", "w") as f:
+    #                 f.write(f"{name}\nTotal pt: {score}\nRank: {rank}")
+            
+    #         #create another  textdoc for the perfect stranger to use
+    #         top_user = list(top_three)[0]
+    #         with open("perfectstranger.txt", "w") as f:
+    #             f.write(top_user)
