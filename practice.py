@@ -7,7 +7,7 @@ import os
 import csv
 
 class Bot(commands.Bot):
-    points_by_chatter = {'codingwithstrangers': 8, 'justasuspect': 30, 'grimybadger': 54.0, 'hittaus': 24, 'simulakrum': 29.5, 'kaijuirl': 0, 'earend': 5, 'livtechsavvy': 0, 'codingvibe': 1, 'metadevgirl': 2, 'kumakazee_': 5, 'codexhere': 2, 'deckardjake': 6.5, 'arminkazim': 67, 'fathernate99': 39, 'metalkat': 5, 'g4goodlooking': 0, 'zman4532': 1}
+    points_by_chatter = {}
     
 
     def __init__(self):
@@ -128,6 +128,20 @@ class Bot(commands.Bot):
         else:
             mode= "w"
 
+                # Open the CSV file for writing
+        with open(csv_file, mode, newline="") as f:
+            # Create a CSV writer object
+            writer = csv.writer(f)
+            
+            # Write the header row to the CSV file if in write mode
+            if mode == "w":
+                header = base_header
+                writer.writerow(header)
+            
+            # Write the data rows to the CSV file
+            for chatter, points in top_three.items():
+                row = base_header
+                writer.writerow(row)
 
         #         # Delete today's scores from previous runs
         # today = str(date.today())
