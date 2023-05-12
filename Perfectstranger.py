@@ -1,9 +1,12 @@
-
+from datetime import date
 from operator import length_hint
 import random
 from twitchio.ext import commands, routines
 from clientshit import access_token
 import os
+import csv
+import pandas as pd
+import time
 
 class Bot(commands.Bot):
     points_by_chatter = {}
@@ -106,21 +109,69 @@ class Bot(commands.Bot):
     async def finalleaderboard(self, ctx: commands.Context):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
         top_three = dict(list(sorted_points_chatter.items())[:3])
-        if ctx.author.is_broadcaster:
-                    
-            # Write top three users to text files
-            for t, user in enumerate(top_three.items()):
-                name, score = user
-                rank = [f"{i}th" for i in range(1, len(top_three)+1)][t]
-                with open(f"user{t+1}.txt", "w") as f:
-                    f.write(f"{name}\nTotal pt: {score}\nRank: {rank}")
+        print(top_three)
+
+        timestr = time.localtime()
+        date_str = time.strftime("%m/%d/%Y %H:%M:%S", timestr)
+
+        #csv_file path
+        csv_file = "Total_Chatter.csv"
+        # Open the CSV file for writing
+        with open(csv_file,"a", newline="") as f:
             
-            #create another  textdoc for the perfect stranger to use
-            top_user = list(top_three)[0]
-            with open("perfectstranger.txt", "w") as f:
-                f.write(top_user)
+            # Create a CSV writer object
+            writer = csv.writer(f)
+
+            # Write a row for each chatter with their position for this timestamp
+            top_chatters = list(top_three.keys())
+            for chatter in sorted_points_chatter.keys():
+                position = top_chatters.index(chatter) if chatter in top_chatters else -1
+                row = [date_str, chatter, sorted_points_chatter[chatter], 1 if position == 0 else 0,
+                        1 if position == 1 else 0, 1 if position == 2 else 0]
+                writer.writerow(row)
+
+        # Read in the CSV file as a pandas dataframe
+        df =  pd.read_csv(csv_file, names = ['timestamp',"user","points", "first", "second", "third"])
+       
+        # # Convert the "Timestamp" column to datetime format
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+       
+        # Sort the dataframe by the "Timestamp" column in descending order
+        df = df.sort_values("timestamp", ascending=False)
         
-        Ranking_message = await self.final_Leaderboard(sorted_points_chatter)
+        #remove header and Write the sorted dataframe back to the CSV file
+        df.to_csv(csv_file, index=False, header=False)
+        print(df)
+            
+                     
+        #     # Write the data rows to the CSV file
+         
+        #     for chatter, points in sorted_points_chatter.items():
+        #         row = timestr, chatter, points 
+        #     else:
+        #         row = timestr, chatter, points
+        #         writer.writerow(row)
+
+        # #cal top rank and then post to top_three
+        
+
+        # write top_three
+        with open("top_three.csv", "a", newline="") as f:
+            writer = csv.writer(f)
+        # for chatter, points in sorted_points_chatter.items():
+        #     # Write the data rows to the CSV file
+        #     for chatter, points in top_three.items():
+        #         row = chatter, points
+        #         writer.writerow(row)
+
+            # Write the data rows to the CSV file
+            for chatter, points in top_three.items():
+                row = chatter, points
+                writer.writerow(row)
+           
+
+        
+        Ranking_message = await self.finalleaderboard(sorted_points_chatter)
         await ctx.send(f'{Ranking_message}')
 
 

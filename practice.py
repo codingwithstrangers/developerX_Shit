@@ -116,33 +116,67 @@ class Bot(commands.Bot):
 
         #csv_file path
         csv_file = "Total_Chatter.csv"
-        
-          # Open the CSV file for writing
+        # Open the CSV file for writing
         with open(csv_file,"a", newline="") as f:
+            
             # Create a CSV writer object
             writer = csv.writer(f)
 
             # Write a row for each chatter with their position for this timestamp
-        top_chatters = list(top_three.keys())
-        for chatter in sorted_points_chatter.keys():
-            position = top_chatters.index(chatter) if chatter in top_chatters else -1
-            row = [date_str, chatter, sorted_points_chatter[chatter], 1 if position == 0 else 0, 1 if position == 1 else 0, 1 if position == 2 else 0]
-            writer.writerow(row)
+            top_chatters = list(top_three.keys())
+            for chatter in sorted_points_chatter.keys():
+                position = top_chatters.index(chatter) if chatter in top_chatters else -1
+                row = [date_str, chatter, sorted_points_chatter[chatter], 1 if position == 0 else 0,
+                        1 if position == 1 else 0, 1 if position == 2 else 0]
+                writer.writerow(row)
 
         # Read in the CSV file as a pandas dataframe
-        df = pd.read_csv(csv_file)
-
-        # Convert the "Timestamp" column to datetime format
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"])
-
+        df =  pd.read_csv(csv_file, names = ['timestamp',"user","points", "first", "second", "third"])
+       
+        # # Convert the "Timestamp" column to datetime format
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+       
         # Sort the dataframe by the "Timestamp" column in descending order
-        df = df.sort_values("Timestamp", ascending=False)
-
-        # Write the sorted dataframe back to the CSV file
-        df.to_csv("F:\Coding with Strangers\Twitchbot\perfectstrangerbot\Total_Chatter.csv", index=False)
+        df = df.sort_values("timestamp", ascending=False)
         
+        rank_user = df.groupby('user', sort=False).agg({'points':'sum','first': 'sum', 'second': 'sum', 'third':'sum'})
+        rank_user.to_csv('Rank_User.csv')
+        print(rank_user)
+
+        #remove header and Write the sorted dataframe back to the CSV file
+        df.to_csv(csv_file, index=False, header=False)
+        print(df)
             
-                     
+        #Read the Rank_user csv  and pull data
+        with open ("Rank_User.csv", newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            #skip the first line
+            next(reader)
+            #loop that shit come on
+            for i, row in enumerate (reader, start=1):
+                if i >= 4:
+                    break
+                #get the uses name from the first column
+                user =row[0]
+                #creat the txt file
+                with open(f'user{i}.txt','w') as outfile:
+                    #write name
+                    outfile.write(f'{user}\n')
+                    #write the total points
+                    outfile.write(f'Total Points: {row[1]}\n')
+                    
+                    #loop the columns
+                    for col in row:
+                        
+                        outfile.write(f'1st x  {row[2]}\n')
+                    
+                        outfile.write(f'2nd x {row[3]}\n')
+                    
+                        outfile.write(f'3rd x {row[4]}\n')
+
+             
+
+
         #     # Write the data rows to the CSV file
          
         #     for chatter, points in sorted_points_chatter.items():
