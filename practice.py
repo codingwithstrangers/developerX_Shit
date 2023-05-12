@@ -164,15 +164,15 @@ class Bot(commands.Bot):
                     outfile.write(f'{user}\n')
                     #write the total points
                     outfile.write(f'Total Points: {row[1]}\n')
+                    #get the mother loving rankings
+                    outfile.write(f'1st x {row[2]}\n')
                     
-                    #loop the columns
-                    for col in row:
+                    outfile.write(f'2nd x {row[3]}\n')
+                
+                    outfile.write(f'3rd x {row[4]}\n')
+                
                         
-                        outfile.write(f'1st x  {row[2]}\n')
-                    
-                        outfile.write(f'2nd x {row[3]}\n')
-                    
-                        outfile.write(f'3rd x {row[4]}\n')
+                        
 
              
 
