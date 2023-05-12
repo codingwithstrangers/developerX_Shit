@@ -5,6 +5,8 @@ from twitchio.ext import commands, routines
 from clientshit import access_token
 import os
 import csv
+import pandas as pd
+import time
 
 class Bot(commands.Bot):
     points_by_chatter = {}
@@ -107,130 +109,66 @@ class Bot(commands.Bot):
     async def finalleaderboard(self, ctx: commands.Context):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
         top_three = dict(list(sorted_points_chatter.items())[:3])
+        print(top_three)
+
+        timestr = time.localtime()
+        date_str = time.strftime("%m/%d/%Y %H:%M:%S", timestr)
 
         #csv_file path
-        csv_file = "top_three.csv"
-
-        #define the header
-        base_header = ["Date", "Name", "Total Point", "1st Place", "2nd Place", "3rd Place", "Todays Score"]
-
-        # Check if the CSV file already exists
-        if os.path.exists(csv_file):
-            # If the file exists, check if it has a header row
-            with open(csv_file, "r") as f:
-                reader = csv.reader(f)
-                header = next(reader, None)
-#if the row is in csv skil action
-            if header == base_header:
-                mode = "a" #append mode
-            else:
-                mode = "w" #write mode
-        else:
-            mode= "w"
-
-                # Open the CSV file for writing
-        with open(csv_file, mode, newline="") as f:
+        csv_file = "Total_Chatter.csv"
+        
+          # Open the CSV file for writing
+        with open(csv_file,"a", newline="") as f:
             # Create a CSV writer object
             writer = csv.writer(f)
+
+            # Write a row for each chatter with their position for this timestamp
+        top_chatters = list(top_three.keys())
+        for chatter in sorted_points_chatter.keys():
+            position = top_chatters.index(chatter) if chatter in top_chatters else -1
+            row = [date_str, chatter, sorted_points_chatter[chatter], 1 if position == 0 else 0, 1 if position == 1 else 0, 1 if position == 2 else 0]
+            writer.writerow(row)
+
+        # Read in the CSV file as a pandas dataframe
+        df = pd.read_csv(csv_file)
+
+        # Convert the "Timestamp" column to datetime format
+        df["Timestamp"] = pd.to_datetime(df["Timestamp"])
+
+        # Sort the dataframe by the "Timestamp" column in descending order
+        df = df.sort_values("Timestamp", ascending=False)
+
+        # Write the sorted dataframe back to the CSV file
+        df.to_csv("F:\Coding with Strangers\Twitchbot\perfectstrangerbot\Total_Chatter.csv", index=False)
+        
             
-            # Write the header row to the CSV file if in write mode
-            if mode == "w":
-                header = base_header
-                writer.writerow(header)
-            
+                     
+        #     # Write the data rows to the CSV file
+         
+        #     for chatter, points in sorted_points_chatter.items():
+        #         row = timestr, chatter, points 
+        #     else:
+        #         row = timestr, chatter, points
+        #         writer.writerow(row)
+
+        # #cal top rank and then post to top_three
+        
+
+        # write top_three
+        with open("top_three.csv", "a", newline="") as f:
+            writer = csv.writer(f)
+        # for chatter, points in sorted_points_chatter.items():
+        #     # Write the data rows to the CSV file
+        #     for chatter, points in top_three.items():
+        #         row = chatter, points
+        #         writer.writerow(row)
+
             # Write the data rows to the CSV file
             for chatter, points in top_three.items():
-                row = base_header
+                row = chatter, points
                 writer.writerow(row)
+           
 
-        #         # Delete today's scores from previous runs
-        # today = str(date.today())
-        # with open("top_three_score.csv", "r") as f_in, open("temp.csv", "w", newline="") as f_out:
-        #     reader = csv.reader(f_in)
-        #     writer = csv.writer(f_out)
-        #     headers = next(reader)
-        #     writer.writerow(headers)
-        #     for row in reader:
-        #         if row[0] != today:
-        #             writer.writerow(row)
-
-        
-        # # Write user information to CSV file
-        # with open("top_three_score.csv", "a", newline="") as f:
-        #     writer = csv.writer(f)
-            
-        # # Check if headers already exist in CSV file
-        # headers_exist = False
-        # with open("top_three_score.csv", "r") as f_check:
-        #     reader = csv.reader(f_check)
-        #     headers = next(reader)
-        #     if "Date" in headers:
-        #         headers_exist = True
-
-        # # Add header row if it doesn't exist
-        # if not headers_exist:
-        #     writer.writerow(["Date", "Name", "Total Point", "1st Place", "2nd Place", "3rd Place", "Todays Score"])
-
-
-        # # Update scores for top three users
-        # for user, score in top_three.items():
-        #     row_found = False
-        #     with open("top_three_score.csv", "r") as f_check:
-        #         reader = csv.reader(f_check)
-        #         next(reader)  # Skip header row
-        #         for row in reader:
-        #             if row[1] == user:
-        #                 row_found = True
-        #                 # Update scores for existing user
-        #                 row_date = row[0]
-        #                 total_score = int(row[2]) + score
-        #                 first_place = int(row[3])
-        #                 second_place = int(row[4])
-        #                 third_place = int(row[5])
-        #                 todays_score = score
-        #                 if score > first_place:
-        #                     first_place = score
-        #                 elif score > second_place:
-        #                     second_place = score
-        #                 elif score > third_place:
-        #                     third_place = score
-        #                 # Update row with new scores
-        #                 with open("top_three_score.csv", "r") as f_in, open("temp.csv", "w", newline="") as f_out:
-        #                     reader = csv.reader(f_in)
-        #                     writer = csv.writer(f_out)
-        #                     writer.writerow(headers)
-        #                     for row in reader:
-        #                         if row[1] == user:
-        #                             row[0] = today
-        #                             row[2] = total_score
-        #                             row[3] = first_place
-        #                             row[4] = second_place
-        #                             row[5] = third_place
-        #                             row[6] = todays_score
-        #                         writer.writerow(row)
-        #                 # Overwrite original file with updated row
-        #                 with open("top_three_score.csv", "w", newline="") as f_out, open("temp.csv", "r") as f_in:
-        #                     for line in f_in:
-        #                         f_out.write(line)
-        #                 break
-        #         if not row_found:
-        #             # Add new row for user
-        #             writer.writerow([today, user, score, score, 0, 0, score])
-                    
-        #     # Sort CSV file by today's score
-        #     with open("top_three_score.csv", "r") as f_in, open("temp.csv", "w", newline="") as f_out:
-        #         reader = csv.reader(f_in)
-        #         writer = csv.writer(f_out)
-        #         writer.writerow(headers)
-        #         sorted_rows = sorted(reader, key=lambda row: int(row[6]), reverse=True)
-        #         for row in sorted_rows:
-        #             writer.writerow(row)
-        #     # Overwrite original file with sorted rows
-        #     with open("top_three_score.csv", "w", newline="") as f_out, open("temp.csv", "r") as f_in:   
-
-
-    
-        
         
         Ranking_message = await self.finalleaderboard(sorted_points_chatter)
         await ctx.send(f'{Ranking_message}')
