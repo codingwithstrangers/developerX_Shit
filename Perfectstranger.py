@@ -56,7 +56,7 @@ class Bot(commands.Bot):
         # wight one bad word they wont get any point.
 
         for i in message.content.split():
-            bad_words = ["strainbreh", "fun", "easy", "blender with strangers", "art with strangers", "mod", "my wife is black", "racing game"
+            bad_words = ["strainbreh", "fun", "easy", "try", "why", "mod", "my wife is black", "racing game"
                          ,"blm" ]
             if i.lower() in bad_words:   
                 if len(message.content) == 1:
@@ -137,39 +137,44 @@ class Bot(commands.Bot):
         df["timestamp"] = pd.to_datetime(df["timestamp"])
        
         # Sort the dataframe by the "Timestamp" column in descending order
-        df = df.sort_values("timestamp", ascending=False)
+        df = df.sort_values(["timestamp",'points'], ascending=False)
+        print('look at me')
+        print(df)
         
+        rank_user = df.groupby('user', sort=False).agg({'points':'sum','first': 'sum', 'second': 'sum', 'third':'sum'})
+        rank_user.to_csv('Rank_User.csv')
+        
+
         #remove header and Write the sorted dataframe back to the CSV file
         df.to_csv(csv_file, index=False, header=False)
-        print(df)
-            
-                     
-        #     # Write the data rows to the CSV file
-         
-        #     for chatter, points in sorted_points_chatter.items():
-        #         row = timestr, chatter, points 
-        #     else:
-        #         row = timestr, chatter, points
-        #         writer.writerow(row)
-
-        # #cal top rank and then post to top_three
         
-
-        # write top_three
-        with open("top_three.csv", "a", newline="") as f:
-            writer = csv.writer(f)
-        # for chatter, points in sorted_points_chatter.items():
-        #     # Write the data rows to the CSV file
-        #     for chatter, points in top_three.items():
-        #         row = chatter, points
-        #         writer.writerow(row)
-
-            # Write the data rows to the CSV file
-            for chatter, points in top_three.items():
-                row = chatter, points
-                writer.writerow(row)
-           
-
+            
+        #Read the Rank_user csv  and pull data
+        with open ("Rank_User.csv", newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            #skip the first line
+            next(reader)
+            #loop that shit come on
+            for i, row in enumerate (reader, start=1):
+                if i >= 4:
+                    break
+                #get the uses name from the first column
+                user =row[0]
+                print(user)
+                #creat the txt file
+                with open(f'user{i}.txt','w') as outfile:
+                    #write name
+                    outfile.write(f'{user}\n')
+                    #write the total points
+                    outfile.write(f'Total Points: {row[1]}\n')
+                    #get the mother loving rankings
+                    outfile.write(f'1st x {row[2]}, 2nd x {row[3]}, 3rd x {row[4]}')
+                               
+                    
+                with open('Perfectstranger.txt', 'w') as perfectstranger:
+                    perfectstranger.write(f'{user}\n')        
+                        
+                 
         
         Ranking_message = await self.finalleaderboard(sorted_points_chatter)
         await ctx.send(f'{Ranking_message}')
