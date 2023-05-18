@@ -69,7 +69,7 @@ class Bot(commands.Bot):
         #check if user is subscriber or not
         #if they use a channel emote "channel emote and are subbed" they are getting .5 point
         subbed_chatters = ["coding32Thinkmybrother", "coding32Trunks", "coding32Whatmybrother", "coding32Zemi", "coding32Goten", "coding32Heart", "coding32Outofsewer"
-                           , "coding32sewer", "coding32Suscoding", "coding32Donny", "coding32What"]
+                           , "coding32sewer", "coding32Suscoding", "coding32Donny", "coding32What", "coding32really", "thank you", "thanks"]
         for x in message.content.split():
             if x in subbed_chatters and message.author.is_subscriber == 1:
                 self.points_by_chatter[message.author.name] += .5
@@ -161,6 +161,11 @@ class Bot(commands.Bot):
                 #get the uses name from the first column
                 user =row[0]
                 print(user)
+
+                # Store the first user
+                if i == 1:
+                    first_user = user
+        
                 #creat the txt file
                 with open(f'user{i}.txt','w') as outfile:
                     #write name
@@ -171,8 +176,10 @@ class Bot(commands.Bot):
                     outfile.write(f'1st x {row[2]}, 2nd x {row[3]}, 3rd x {row[4]}')
                                
                     
-                with open('Perfectstranger.txt', 'w') as perfectstranger:
-                    perfectstranger.write(f'{user}\n')        
+                if first_user:
+                    with open('Perfectstranger.txt', 'w') as perfectstranger:
+                        perfectstranger.write(f'{first_user}')
+                            
                         
                  
         
@@ -206,7 +213,7 @@ class Bot(commands.Bot):
         
     
 # ******************
-    @routines.routine(hours=1.0, iterations=5)
+    @routines.routine(hours=1.0, iterations=24)
     async def send_leaderboard(self):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True)
         )
