@@ -43,7 +43,7 @@ class Bot(commands.Bot):
       
         #this will add the user to dic and count 
         # list of users to exclude
-        exclude_users = ['nightbot']
+        exclude_users = ['nightbot', 'streamlabs', 'codingwithstrangers']
 
         if message.author.name not in exclude_users:
             if message.author.name not in self.points_by_chatter.keys():
@@ -69,7 +69,7 @@ class Bot(commands.Bot):
         #check if user is subscriber or not
         #if they use a channel emote "channel emote and are subbed" they are getting .5 point
         subbed_chatters = ["coding32Thinkmybrother", "coding32Trunks", "coding32Whatmybrother", "coding32Zemi", "coding32Goten", "coding32Heart", "coding32Outofsewer"
-                           , "coding32sewer", "coding32Suscoding", "coding32Donny", "coding32What", "coding32really", "thank you", "thanks"]
+                           , "coding32sewer", "coding32Suscoding", "coding32Donny", "coding32What", "coding32really", "thank you", "thanks", "thank you"]
         for x in message.content.split():
             if x in subbed_chatters and message.author.is_subscriber == 1:
                 self.points_by_chatter[message.author.name] += .5
