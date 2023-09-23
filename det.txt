@@ -125,3 +125,31 @@ c.most_common(2)
     #         top_user = list(top_three)[0]
     #         with open("perfectstranger.txt", "w") as f:
     #             f.write(top_user)
+
+
+    import random
+
+def print_digits_in_any_order(number):
+    # Convert the number to a string to work with individual digits
+    number_str = str(number)
+    
+    # Create a list to store the individual digits
+    digit_list = []
+    
+    # Iterate through the characters in the string representation of the number
+    for char in number_str:
+        # Check if the character represents a digit
+        if char.isdigit():
+            # Convert the character back to an integer and add it to the list
+            digit_list.append(int(char))
+    
+    # Shuffle the digit list to print digits in any order
+    random.shuffle(digit_list)
+    
+    # Print the shuffled digits
+    for digit in digit_list:
+        print(digit)
+
+# Example usage:
+number = 123456789
+print_digits_in_any_order(number)
