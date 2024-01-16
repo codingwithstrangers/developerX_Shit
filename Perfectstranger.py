@@ -43,7 +43,7 @@ class Bot(commands.Bot):
       
         #this will add the user to dic and count 
         # list of users to exclude
-        exclude_users = ['nightbot', 'streamlabs', 'codingwithstrangers', 'thestrangest_bot']
+        exclude_users = ['nightbot', 'streamlabs', 'codingwithstrangers', 'thestrangest_bot', 'restreambot']
 
         if message.author.name not in exclude_users:
             if message.author.name not in self.points_by_chatter.keys():
