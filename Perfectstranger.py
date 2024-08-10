@@ -17,9 +17,10 @@ class Bot(commands.Bot):
         # prefix can be a callable, which returns a list of strings or a string...
         # initial_channels can also be a callable which returns a list of strings...
         
+        # super().__init__(token= access_token , prefix='?', initial_channels=['thestrangest_bot'],
+        #     nick = "The_Perfect_Stranger")
         super().__init__(token= access_token , prefix='?', initial_channels=['codingwithstrangers'],
             nick = "Perfect_Stranger")
-
     async def event_ready(self):
        
         # Notify us when everything is ready!
@@ -56,7 +57,7 @@ class Bot(commands.Bot):
         # wight one bad word they wont get any point.
 
         for i in message.content.split():
-            bad_words = ["strainbreh", "fun", "easy", "try", "why", "mod", "my wife is black", "racing game"
+            bad_words = ["strainbreh", "fun", "easy", "try", "why", "mod", "my wife is black","bad", "racing game"
                          ,"blm" ]
             if i.lower() in bad_words:   
                 if len(message.content) == 1:
