@@ -44,7 +44,7 @@ class Bot(commands.Bot):
       
         #this will add the user to dic and count 
         # list of users to exclude
-        exclude_users = ['nightbot', 'streamlabs', 'codingwithstrangers', 'thestrangest_bot', 'restreambot']
+        exclude_users = ['nightbot', 'streamlabs', 'restreambot']
 
         if message.author.name not in exclude_users:
             if message.author.name not in self.points_by_chatter.keys():
@@ -77,9 +77,9 @@ class Bot(commands.Bot):
                 break    
         print(self.points_by_chatter)
         if message.author.is_subscriber:
-            print("Subed")
+            print("subbed")
         else:
-            print("Not_Subed")
+            print("not_subbed")
         
 
         # Since we have commands and are overriding the default `event_message`
@@ -113,10 +113,10 @@ class Bot(commands.Bot):
         print(top_three)
 
         timestr = time.localtime()
-        date_str = time.strftime("%m/%d/%Y %H:%M:%S", timestr)
+        date_str = time.strftime("%Y/%m/%d %H:%M:%S", timestr)
 
         #csv_file path
-        csv_file = "Total_Chatter.csv"
+        csv_file = "F:\Coding with Strangers\Twitchbot\perfectstrangerbot\Total_Chatter.csv"
         # Open the CSV file for writing
         with open(csv_file,"a", newline="") as f:
             

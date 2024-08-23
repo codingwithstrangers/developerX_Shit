@@ -70,9 +70,9 @@ class Bot(commands.Bot):
                 break    
         print(self.points_by_chatter)
         if message.author.is_subscriber:
-            print("🌟")
+            print("subbed")
         else:
-            print("🌘")
+            print("not_subbed")
         
 
         # Since we have commands and are overriding the default `event_message`
