@@ -109,8 +109,8 @@ class Bot(commands.Bot):
                     
             #Write top three users to text files
             for t, user in enumerate(top_three.items()):
-                with open(f"user{t+1}.txt", "w") as f:
-                    f.write(user[0])
+                with open(f"user{t+1}.txt", "w") as e:
+                    e.write(user[0])
 
         
         Ranking_message = await self.final_Leaderboard(sorted_points_chatter)

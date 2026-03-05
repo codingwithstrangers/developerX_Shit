@@ -1,6 +1,9 @@
 from datetime import date
 from operator import length_hint
 import random
+import asyncio
+import argparse
+import re
 from twitchio.ext import commands, routines
 from clientshit import access_token
 import os
@@ -12,7 +15,7 @@ class Bot(commands.Bot):
     points_by_chatter = {}
     
 
-    def __init__(self):
+    def __init__(self, runtime_minutes=720):
         # Initialise our Bot with our access token, prefix and a list of channels to join on boot...
         # prefix can be a callable, which returns a list of strings or a string...
         # initial_channels can also be a callable which returns a list of strings...
@@ -21,15 +24,107 @@ class Bot(commands.Bot):
         #     nick = "The_Perfect_Stranger")
         super().__init__(token= access_token , prefix='?', initial_channels=['codingwithstrangers'],
             nick = "Perfect_Stranger")
+        if runtime_minutes is None:
+            runtime_minutes = 720
+
+        runtime_minutes = max(runtime_minutes, 720)
+        self.default_runtime_seconds = int(runtime_minutes * 60)
+        self.runtime_limit_seconds = self.default_runtime_seconds
+        self.runtime_timer_task = None
+
     async def event_ready(self):
        
         # Notify us when everything is ready!
         # We are logged in and ready to chat and use commands...
         print(f'Logged in as | {self.nick}')
         print(f'User id is | {self.user_id}')
+        if self.runtime_limit_seconds:
+            print(f'Runtime limit set to {self.runtime_limit_seconds} seconds')
+            self.restart_runtime_timer()
 
         #this is how the routine starts
         self.send_leaderboard.start()
+
+    def restart_runtime_timer(self, hours=None):
+        if hours is None:
+            runtime_seconds = self.default_runtime_seconds
+        else:
+            runtime_seconds = int(hours * 3600)
+
+        self.runtime_limit_seconds = runtime_seconds
+
+        if self.runtime_timer_task and not self.runtime_timer_task.done():
+            self.runtime_timer_task.cancel()
+
+        self.runtime_timer_task = asyncio.create_task(self.stop_after_runtime(runtime_seconds))
+
+    async def stop_after_runtime(self, runtime_seconds):
+        try:
+            await asyncio.sleep(runtime_seconds)
+        except asyncio.CancelledError:
+            return
+
+        try:
+            channel = self.get_channel("codingwithstrangers")
+            if channel:
+                await channel.send("Runtime limit reached. Shutting down bot now.")
+        except Exception as e:
+            print(f'Could not send shutdown message: {e}')
+
+        print('Runtime limit reached. Closing bot...')
+        await self.close()
+
+    async def process_restart_timer_message(self, message):
+        content = message.content.strip()
+        if not content.lower().startswith("!restarttimer"):
+            return False
+
+        if not (message.author.is_broadcaster or message.author.is_mod):
+            await message.channel.send("Only host/mod can restart the timer.")
+            return True
+
+        suffix = content[len("!restarttimer"):].strip()
+        hours = None
+
+        if suffix in ["", "="]:
+            hours = None
+        elif suffix.startswith("(") and suffix.endswith(")"):
+            value = suffix[1:-1].strip()
+            try:
+                hours = float(value)
+            except ValueError:
+                await message.channel.send("Use !restarttimer(x) where x is a number of hours.")
+                return True
+        elif suffix.startswith("="):
+            value = suffix[1:].strip()
+            if value == "":
+                hours = None
+            else:
+                try:
+                    hours = float(value)
+                except ValueError:
+                    await message.channel.send("Use !restarttimer=x where x is a number of hours.")
+                    return True
+        else:
+            value = re.sub(r"^\((.*)\)$", r"\1", suffix).strip()
+            try:
+                hours = float(value)
+            except ValueError:
+                await message.channel.send("Valid formats: !restarttimer= or !restarttimer(x)")
+                return True
+
+        if hours is not None and hours <= 0:
+            await message.channel.send("Timer hours must be greater than 0.")
+            return True
+
+        self.restart_runtime_timer(hours=hours)
+
+        if hours is None:
+            await message.channel.send("Timer restarted to default 12 hours.")
+        else:
+            await message.channel.send(f"Timer restarted to {hours} hour(s).")
+
+        return True
         
 
     async def event_message(self, message):
@@ -38,13 +133,16 @@ class Bot(commands.Bot):
         if message.echo:
             return
 
+        if await self.process_restart_timer_message(message):
+            return
+
         # Print the contents of our message to console...
         print(message.content.encode("utf-8"))
         print(message.author.name)
       
         #this will add the user to dic and count 
         # list of users to exclude
-        exclude_users = ['nightbot', 'streamlabs', 'restreambot']
+        exclude_users = ['nightbot', 'streamlabs', 'codingwithstrangers','restreambot', 'thestrangest_bot']
 
         if message.author.name not in exclude_users:
             if message.author.name not in self.points_by_chatter.keys():
@@ -111,17 +209,19 @@ class Bot(commands.Bot):
         sorted_points_chatter = dict(sorted(self.points_by_chatter.items(), key=lambda x: x[1], reverse=True))
         top_three = dict(list(sorted_points_chatter.items())[:3])
         print(top_three)
+        print(sorted_points_chatter, "lok at me 110")
 
         timestr = time.localtime()
-        date_str = time.strftime("%Y/%m/%d %H:%M:%S", timestr)
+        date_str = time.strftime("%Y-%m-%d %H:%M:%S", timestr)
+        # date_str = time.strftime("%Y/%m/%d %H:%M:%S", timestr)
 
         #csv_file path
-        csv_file = "F:\Coding with Strangers\Twitchbot\perfectstrangerbot\Total_Chatter.csv"
+        csv_file = r"E:\Coding with Strangers\Twitchbot\perfectstrangerbot\Total_Chatter.csv"
         # Open the CSV file for writing
-        with open(csv_file,"a", newline="") as f:
+        with open(csv_file,"a", newline="") as e:
             
             # Create a CSV writer object
-            writer = csv.writer(f)
+            writer = csv.writer(e)
 
             # Write a row for each chatter with their position for this timestamp
             top_chatters = list(top_three.keys())
@@ -147,6 +247,7 @@ class Bot(commands.Bot):
         
 
         #remove header and Write the sorted dataframe back to the CSV file
+        df["timestamp"] = df["timestamp"].dt.strftime('%Y-%m-%d %H:%M:%S')
         df.to_csv(csv_file, index=False, header=False)
         
             
@@ -184,11 +285,17 @@ class Bot(commands.Bot):
                         
                  
         
-        Ranking_message = await self.finalleaderboard(sorted_points_chatter)
-        await ctx.send(f'{Ranking_message}')
+        
+
+        # Generate the ranking message as a string
+        ranking_message = "\n".join([f"{index+1}. {user} - {points} pts"
+                                    for index, (user, points) in enumerate(sorted_points_chatter.items())])
+
+        # Send the leaderboard message back to Twitch chat
+        await ctx.send(f"Final Leaderboard:\n{ranking_message}")
 
 
-        self.save_data() # save the data to the file after updating top_three
+        #self.save_data() # save the data to the file after updating top_three
 
 
     async def leaderboard_snap (self, sorted_chatters):
@@ -252,5 +359,14 @@ class Bot(commands.Bot):
         else:
             return "coding32Suscoding Come on Stranger I know you ain't Stalking and not Talking \n"
             
-bot = Bot()
+parser = argparse.ArgumentParser(description="Run the Twitch bot with an optional runtime limit.")
+parser.add_argument(
+    "--runtime-minutes",
+    type=float,
+    default=720,
+    help="How long the bot should run before shutting down automatically (minimum 720 minutes / 12 hours).",
+)
+args = parser.parse_args()
+
+bot = Bot(runtime_minutes=args.runtime_minutes)
 bot.run()
